@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Calendar\CalendarFeedController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LookupController;
 use App\Http\Controllers\Organization\BahagianController;
 use App\Http\Controllers\Organization\StatusKehadiranController;
 use App\Http\Controllers\Organization\UnitController;
@@ -20,16 +21,23 @@ use Illuminate\Support\Facades\Route;
 // Public Authentication Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
+// PWA Offline Fallback Shell (Available to guest & auth users)
+Route::view('/offline', 'offline')->name('offline');
+
 // Public Tokenized iCalendar Feed (Tier 2 Zero-Cost Sync for Google Calendar & Outlook)
-Route::get('/calendar/feed/{token}.ics', [CalendarFeedController::class, 'feed'])->name('calendar.feed');
+Route::get('/calendar/feed/{token}.ics', [CalendarFeedController::class, 'feed'])
+    ->name('calendar.feed')
+    ->middleware('throttle:60,1');
 
 // Public Tokenized Kiosk TV Display (for unmanned TVs / Raspberry Pi)
-Route::get('/tv/kiosk/{token}', [TvDisplayController::class, 'kiosk'])->name('tv.kiosk');
+Route::get('/tv/kiosk/{token}', [TvDisplayController::class, 'kiosk'])
+    ->name('tv.kiosk')
+    ->middleware('throttle:60,1');
 
 // Protected Application Routes
 Route::middleware('auth')->group(function () {
@@ -46,7 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Async Lookup Routes (High-volume dataset comboboxes)
-    Route::get('lookup/anggota', [\App\Http\Controllers\LookupController::class, 'anggota'])->name('lookup.anggota');
+    Route::get('lookup/anggota', [LookupController::class, 'anggota'])->name('lookup.anggota');
 
     // Organization Module (Dedicated CRU)
     Route::prefix('organization')->name('organization.')->group(function () {
@@ -57,7 +65,9 @@ Route::middleware('auth')->group(function () {
 
     // Personnel Module (Dedicated CRU)
     Route::prefix('personnel')->name('personnel.')->group(function () {
-        Route::post('anggota/sync-onestack', [AnggotaController::class, 'syncOneStack'])->name('anggota.sync-onestack');
+        Route::post('anggota/sync-onestack', [AnggotaController::class, 'syncOneStack'])
+            ->name('anggota.sync-onestack')
+            ->middleware('throttle:10,1');
         Route::post('anggota/{anggota}/refresh-onestack', [AnggotaController::class, 'refreshOneStack'])->name('anggota.refresh-onestack');
         Route::resource('anggota', AnggotaController::class)->parameters(['anggota' => 'anggota']);
 
@@ -92,7 +102,7 @@ Route::middleware('auth')->group(function () {
         Route::get('daily/print', [ReportController::class, 'dailyPrint'])->name('daily.print');
         Route::get('monthly-matrix', [ReportController::class, 'monthly'])->name('monthly');
         Route::get('monthly-matrix/print', [ReportController::class, 'monthlyPrint'])->name('monthly.print');
-        Route::get('export', [ReportController::class, 'export'])->name('export');
+        Route::get('export', [ReportController::class, 'export'])->name('export')->middleware('throttle:30,1');
     });
 
     // System Administration Module (Superadmin only)

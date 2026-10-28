@@ -7,6 +7,8 @@
 
     <title>{{ $title ?? 'Pusat Pemantauan Operasi & Kehadiran TV — eHadir' }}</title>
 
+    @include('partials.pwa-head')
+
     <!-- Anti-Flash Theme Script (Defaults to dark for TV Command Center, respects saved theme) -->
     <script>
         if (localStorage.getItem('theme') === 'light') {

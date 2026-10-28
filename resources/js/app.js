@@ -1,3 +1,5 @@
+import './pwa';
+
 /**
  * Global Password Visibility Toggle Utility
  *

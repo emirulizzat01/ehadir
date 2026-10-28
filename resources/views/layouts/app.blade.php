@@ -2,10 +2,12 @@
 <html lang="ms">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ isset($title) ? $title . ' — eHadir' : 'eHadir — Sistem Kehadiran Organisasi' }}</title>
+
+    @include('partials.pwa-head')
 
     <!-- Anti-Flash Theme Script (SOP Priority 8) -->
     <script>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="eHadirGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#047857" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="128" fill="url(#eHadirGrad)"/>
+  
+  <!-- Subtle Internal Border -->
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#34d399" stroke-opacity="0.25" stroke-width="4"/>
+
+  <!-- Brand Typography "eH" -->
+  <text x="256" y="325" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+        font-size="240" 
+        font-weight="800" 
+        fill="#ffffff" 
+        text-anchor="middle" 
+        letter-spacing="-8">eH</text>
+        
+  <!-- Subtle Status Dot Accent (Attendance Live indicator) -->
+  <circle cx="395" cy="145" r="24" fill="#34d399"/>
+  <circle cx="395" cy="145" r="14" fill="#ffffff"/>
+</svg>
+

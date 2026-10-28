@@ -41,13 +41,4 @@
             </x-ui.button>
         </div>
     </form>
-
-    <!-- Demo credential helper box -->
-    <div class="mt-6 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-400">
-        <p class="font-semibold text-slate-800 dark:text-slate-200 mb-1">Akaun Pentadbir Lalai (Seeded):</p>
-        <div class="space-y-0.5 font-mono text-[11px]">
-            <p>Emel: <span class="text-emerald-600 dark:text-emerald-400">izzat@kejora.gov.my</span></p>
-            <p>Kata Laluan: <span class="text-emerald-600 dark:text-emerald-400">Password@123</span></p>
-        </div>
-    </div>
 </x-layouts.guest>
