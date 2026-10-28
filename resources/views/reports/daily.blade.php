@@ -86,20 +86,35 @@
 
         <!-- Printable Report Sheet -->
         <x-ui.card :title="'Laporan Kehadiran Organisasi: ' . \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y')">
-            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                            <th class="w-12 px-4 py-3">Bil</th>
-                            <th class="px-4 py-3">No. Pekerja</th>
-                            <th class="px-4 py-3">Nama Anggota</th>
-                            <th class="px-4 py-3">Jawatan</th>
-                            <th class="px-4 py-3">Penempatan</th>
-                            <th class="px-4 py-3">Status Kehadiran</th>
-                            <th class="px-4 py-3">Waktu / Butiran</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <!-- DataTables Toolbar with Search & Entries Selector -->
+            <x-datatable.toolbar
+                :action="route('reports.daily')"
+                searchPlaceholder="Cari anggota dalam laporan..."
+                :resetUrl="route('reports.daily', ['tarikh' => $date])"
+            >
+                <input type="hidden" name="tarikh" value="{{ $date }}">
+                @if (request('bahagian_id'))
+                    <input type="hidden" name="bahagian_id" value="{{ request('bahagian_id') }}">
+                @endif
+                @if (request('unit_id'))
+                    <input type="hidden" name="unit_id" value="{{ request('unit_id') }}">
+                @endif
+            </x-datatable.toolbar>
+
+            <!-- Desktop DataTable -->
+            <x-datatable.container>
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <th class="w-12 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">Bil</th>
+                        <x-datatable.th column="no_pekerja" label="No. Pekerja" />
+                        <x-datatable.th column="nama" label="Nama Anggota" />
+                        <x-datatable.th column="jawatan" label="Jawatan" />
+                        <x-datatable.th :sortable="false" label="Penempatan" />
+                        <x-datatable.th :sortable="false" label="Status Kehadiran" />
+                        <x-datatable.th :sortable="false" label="Waktu / Butiran" />
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         @forelse ($anggotaList as $idx => $a)
                             @php
                                 $rec = $records->get($a->id);
@@ -133,15 +148,10 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-5 py-8 text-center text-slate-400">
-                                    Tiada data untuk dipaparkan.
-                                </td>
-                            </tr>
+                            <x-datatable.empty message="Tiada rekod anggota dijumpai dalam laporan bagi tarikh ini." :resetUrl="route('reports.daily', ['tarikh' => $date])" colspan="7" />
                         @endforelse
                     </tbody>
-                </table>
-            </div>
+                </x-datatable.container>
 
             <!-- Mobile / tablet report cards -->
             <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">
@@ -196,11 +206,8 @@
                 @endforelse
             </div>
 
-            @if ($anggotaList->hasPages())
-                <div class="mt-4">
-                    {{ $anggotaList->links() }}
-                </div>
-            @endif
+            <!-- DataTables Footer Counter & Pagination -->
+            <x-datatable.footer :paginator="$anggotaList" />
         </x-ui.card>
     </div>
 </x-layouts.app>

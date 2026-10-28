@@ -24,43 +24,25 @@
             @endif
         </x-slot:actions>
 
-        <!-- Search Bar -->
-        <form method="GET" action="{{ route('organization.bahagian.index') }}" class="mb-4 flex items-center gap-3">
-            <div class="relative flex-1 max-w-sm">
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari mengikut kod atau nama..."
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3.5 py-2 pl-9 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-emerald-500"
-                />
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <x-icon name="search" class="w-4 h-4" />
-                </div>
-            </div>
-            <x-ui.button type="submit" variant="secondary" size="sm">
-                Cari
-            </x-ui.button>
-            @if (request('search'))
-                <x-ui.button href="{{ route('organization.bahagian.index') }}" variant="ghost" size="sm">
-                    Reset
-                </x-ui.button>
-            @endif
-        </form>
+        <!-- DataTables Toolbar with Search & Entries Selector -->
+        <x-datatable.toolbar
+            :action="route('organization.bahagian.index')"
+            searchPlaceholder="Cari mengikut kod atau nama bahagian..."
+            :resetUrl="route('organization.bahagian.index')"
+        />
 
-        <!-- Table -->
-        <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                        <th class="px-5 py-3">Kod</th>
-                        <th class="px-5 py-3">Nama Bahagian</th>
-                        <th class="px-5 py-3">Bil. Anggota Aktif</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3 text-right">Tindakan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Desktop DataTable -->
+        <x-datatable.container>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                    <x-datatable.th column="kod" label="Kod" />
+                    <x-datatable.th column="nama" label="Nama Bahagian" />
+                    <x-datatable.th column="bil_anggota" label="Bil. Anggota Aktif" />
+                    <x-datatable.th column="aktif" label="Status" />
+                    <x-datatable.th :sortable="false" label="Tindakan" align="right" />
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @forelse ($bahagianList as $b)
                         <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="px-5 py-3.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -96,15 +78,10 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="5" class="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                Tiada rekod bahagian dijumpai.
-                            </td>
-                        </tr>
+                        <x-datatable.empty message="Tiada rekod bahagian dijumpai." :resetUrl="route('organization.bahagian.index')" colspan="5" />
                     @endforelse
                 </tbody>
-            </table>
-        </div>
+            </x-datatable.container>
 
         <!-- Mobile / tablet bahagian cards -->
         <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">
@@ -151,11 +128,8 @@
             @endforelse
         </div>
 
-        @if ($bahagianList->hasPages())
-            <div class="mt-4">
-                {{ $bahagianList->links() }}
-            </div>
-        @endif
+        <!-- DataTables Footer Counter & Pagination -->
+        <x-datatable.footer :paginator="$bahagianList" />
     </x-ui.card>
 
     @if (auth()->user()?->hasPermission('org.manage'))

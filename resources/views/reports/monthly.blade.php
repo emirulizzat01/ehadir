@@ -61,7 +61,7 @@
 
         <!-- Matrix Sheet -->
         <x-ui.card :title="'Matriks Kehadiran: ' . $startOfMonth->translatedFormat('F Y')" description="Paparan penuh status harian seluruh warga kerja">
-            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 min-[1440px]:block">
+            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 min-[1440px]:block shadow-2xs">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 dark:bg-slate-800/60 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                         <tr>

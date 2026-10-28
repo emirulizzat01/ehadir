@@ -41,42 +41,40 @@
                     Senarai Anggota Berkhidmat di Unit Ini
                 </h4>
 
-                <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                            <tr>
-                                <th class="px-4 py-2.5">No. Pekerja</th>
-                                <th class="px-4 py-2.5">Nama Anggota</th>
-                                <th class="px-4 py-2.5">Jawatan</th>
-                                <th class="px-4 py-2.5">Tarikh Mula Berkhidmat</th>
-                                <th class="px-4 py-2.5 text-right">Profil</th>
+                <x-datatable.container>
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <x-datatable.th :sortable="false" label="No. Pekerja" />
+                            <x-datatable.th :sortable="false" label="Nama Anggota" />
+                            <x-datatable.th :sortable="false" label="Jawatan" />
+                            <x-datatable.th :sortable="false" label="Tarikh Mula Berkhidmat" />
+                            <x-datatable.th :sortable="false" label="Profil" align="right" />
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        @forelse ($activePlacements as $p)
+                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                                <td class="px-4 py-3 font-mono text-xs">{{ $p->anggota->no_pekerja ?? '-' }}</td>
+                                <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
+                                    {{ $p->anggota->nama_penuh_gelaran }}
+                                </td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $p->anggota->jawatan ?? '-' }}</td>
+                                <td class="px-4 py-3 text-slate-500">{{ $p->tarikh_mula->format('d/m/Y') }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <a href="{{ route('personnel.anggota.show', $p->anggota) }}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                        Lihat Profil &rarr;
+                                    </a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                            @forelse ($activePlacements as $p)
-                                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                                    <td class="px-4 py-3 font-mono text-xs">{{ $p->anggota->no_pekerja ?? '-' }}</td>
-                                    <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
-                                        {{ $p->anggota->nama_penuh_gelaran }}
-                                    </td>
-                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $p->anggota->jawatan ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-slate-500">{{ $p->tarikh_mula->format('d/m/Y') }}</td>
-                                    <td class="px-4 py-3 text-right">
-                                        <a href="{{ route('personnel.anggota.show', $p->anggota) }}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
-                                            Lihat Profil &rarr;
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-4 py-6 text-center text-slate-400 text-xs">
-                                        Tiada anggota ditempatkan di unit ini pada masa ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-4 py-6 text-center text-slate-400 text-xs">
+                                    Tiada anggota ditempatkan di unit ini pada masa ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </x-datatable.container>
 
                 <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">
                     @forelse ($activePlacements as $p)

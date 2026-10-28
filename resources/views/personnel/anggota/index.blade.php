@@ -47,25 +47,17 @@
             </div>
         </div>
 
-        <!-- Filters Form -->
-        <form method="GET" action="{{ route('personnel.anggota.index') }}" class="mb-4 flex flex-wrap items-center gap-3">
-            <div class="relative flex-1 min-w-[240px]">
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari nama, no. pekerja, jawatan..."
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3.5 py-2 pl-9 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-emerald-500"
-                />
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <x-icon name="search" class="w-4 h-4" />
-                </div>
-            </div>
-
-            <div class="w-36">
+        <!-- DataTables Toolbar with Search & Contextual Filters -->
+        <x-datatable.toolbar
+            :action="route('personnel.anggota.index')"
+            searchPlaceholder="Cari nama, no. pekerja, jawatan..."
+            :resetUrl="route('personnel.anggota.index')"
+        >
+            <div class="w-32">
                 <select
                     name="status"
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3 py-2 text-slate-700 dark:text-slate-200"
+                    onchange="this.form.submit()"
+                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs"
                 >
                     <option value="">Semua Status</option>
                     <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Aktif</option>
@@ -73,10 +65,11 @@
                 </select>
             </div>
 
-            <div class="w-48">
+            <div class="w-44">
                 <select
                     name="bahagian_id"
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3 py-2 text-slate-700 dark:text-slate-200"
+                    onchange="this.form.submit()"
+                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs"
                 >
                     <option value="">Semua Bahagian</option>
                     @foreach ($bahagianList as $b)
@@ -86,31 +79,21 @@
                     @endforeach
                 </select>
             </div>
+        </x-datatable.toolbar>
 
-            <x-ui.button type="submit" variant="secondary" size="sm">
-                Tapis
-            </x-ui.button>
-            @if (request('search') || request('status') !== null || request('bahagian_id'))
-                <x-ui.button href="{{ route('personnel.anggota.index') }}" variant="ghost" size="sm">
-                    Reset
-                </x-ui.button>
-            @endif
-        </form>
-
-        <!-- Table -->
-        <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                        <th class="px-5 py-3">No. Pekerja</th>
-                        <th class="px-5 py-3">Nama Anggota</th>
-                        <th class="px-5 py-3">Jawatan</th>
-                        <th class="px-5 py-3">Bahagian / Unit</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3 text-right">Tindakan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Desktop DataTable -->
+        <x-datatable.container>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                    <x-datatable.th column="no_pekerja" label="No. Pekerja" />
+                    <x-datatable.th column="nama" label="Nama Anggota" />
+                    <x-datatable.th column="jawatan" label="Jawatan" />
+                    <x-datatable.th :sortable="false" label="Bahagian / Unit" />
+                    <x-datatable.th column="aktif" label="Status" />
+                    <x-datatable.th :sortable="false" label="Tindakan" align="right" />
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @forelse ($anggotaList as $a)
                         @php
                             $activePlacement = $a->penempatan_aktif;
@@ -173,15 +156,10 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                Tiada rekod anggota dijumpai dalam skop anda.
-                            </td>
-                        </tr>
+                        <x-datatable.empty message="Tiada rekod anggota dijumpai dalam skop anda." :resetUrl="route('personnel.anggota.index')" colspan="6" />
                     @endforelse
                 </tbody>
-            </table>
-        </div>
+            </x-datatable.container>
 
         <!-- Mobile / tablet member cards -->
         <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">
@@ -256,11 +234,8 @@
             @endforelse
         </div>
 
-        @if ($anggotaList->hasPages())
-            <div class="mt-4">
-                {{ $anggotaList->links() }}
-            </div>
-        @endif
+        <!-- DataTables Footer Counter & Pagination -->
+        <x-datatable.footer :paginator="$anggotaList" />
     </x-ui.card>
 
     @if (auth()->user()?->hasPermission('anggota.manage'))

@@ -11,6 +11,7 @@ use App\Models\Unit;
 use App\Services\AttendanceService;
 use App\Services\ScopeService;
 use App\Services\WhatsAppSummaryService;
+use App\Traits\HasDataTableQueries;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,8 @@ use Illuminate\View\View;
 
 class AttendanceController extends Controller
 {
+    use HasDataTableQueries;
+
     public function __construct(
         protected AttendanceService $attendanceService,
         protected ScopeService $scopeService
@@ -54,6 +57,15 @@ class AttendanceController extends Controller
         // Filter by user's assigned scope (Invariant 3)
         $this->scopeService->scopeAnggota($anggotaQuery, $user, $date);
 
+        // Optional search filter by staff name, no. pekerja, jawatan
+        if ($search = $request->input('search')) {
+            $anggotaQuery->where(function ($q) use ($search) {
+                $q->where('nama_penuh', 'like', "%{$search}%")
+                    ->orWhere('no_pekerja', 'like', "%{$search}%")
+                    ->orWhere('jawatan', 'like', "%{$search}%");
+            });
+        }
+
         // Optional filter by Bahagian / Unit dropdown
         if ($bahagianId = $request->input('bahagian_id')) {
             $anggotaQuery->whereHas('penempatan', function ($q) use ($bahagianId, $date) {
@@ -73,7 +85,28 @@ class AttendanceController extends Controller
             });
         }
 
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->paginate(25)->withQueryString();
+        $sortableColumns = [
+            'nama' => 'nama_penuh',
+            'no_pekerja' => 'no_pekerja',
+            'jawatan' => 'jawatan',
+            'susunan' => 'susunan',
+        ];
+
+        if (! $request->has('sort')) {
+            $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh');
+            $perPage = (int) $request->input('per_page', 25);
+            $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
+            $anggotaList = $anggotaQuery->paginate($perPage)->withQueryString();
+        } else {
+            $anggotaList = $this->applyDataTable(
+                $anggotaQuery,
+                $request,
+                $sortableColumns,
+                defaultSort: 'nama',
+                defaultDirection: 'asc',
+                defaultPerPage: 25
+            );
+        }
         $anggotaIds = $anggotaList->getCollection()->pluck('id')->all();
 
         // 3. Load attendance records for this date

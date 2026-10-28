@@ -131,31 +131,45 @@
 
         <!-- Attendance Roster Grid -->
         <x-ui.card :title="'Status Kehadiran Tarikh: ' . \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y')" description="Klik butang status untuk kemaskini pantas atau guna ikon pensel untuk butiran">
-            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                            @if (auth()->user()?->hasPermission('attendance.manage'))
-                                <th class="w-10 px-4 py-3">
-                                    <input
-                                        type="checkbox"
-                                        x-model="selectAll"
-                                        @change="if (selectAll) { selectedIds = {{ json_encode($anggotaList->getCollection()->pluck('id')) }} } else { selectedIds = [] }"
-                                        class="rounded-sm border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500"
-                                    >
-                                </th>
-                            @endif
-                            <th class="px-4 py-3">Anggota</th>
-                            <th class="px-4 py-3">Penempatan</th>
-                            <th class="px-4 py-3">Status Semasa</th>
-                            <th class="px-4 py-3">Waktu / Catatan</th>
-                            @if (auth()->user()?->hasPermission('attendance.manage'))
-                                <th class="px-4 py-3 text-center">Tindakan Pantas</th>
-                                <th class="px-4 py-3 text-right">Butiran</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <!-- DataTables Toolbar with Search & Entries per page -->
+            <x-datatable.toolbar
+                :action="route('attendance.index')"
+                searchPlaceholder="Cari anggota dalam roster..."
+                :resetUrl="route('attendance.index', ['tarikh' => $date])"
+            >
+                <input type="hidden" name="tarikh" value="{{ $date }}">
+                @if (request('bahagian_id'))
+                    <input type="hidden" name="bahagian_id" value="{{ request('bahagian_id') }}">
+                @endif
+                @if (request('unit_id'))
+                    <input type="hidden" name="unit_id" value="{{ request('unit_id') }}">
+                @endif
+            </x-datatable.toolbar>
+
+            <x-datatable.container>
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        @if (auth()->user()?->hasPermission('attendance.manage'))
+                            <th class="w-10 px-4 py-3">
+                                <input
+                                    type="checkbox"
+                                    x-model="selectAll"
+                                    @change="if (selectAll) { selectedIds = {{ json_encode($anggotaList->getCollection()->pluck('id')) }} } else { selectedIds = [] }"
+                                    class="rounded-sm border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500"
+                                >
+                            </th>
+                        @endif
+                        <x-datatable.th column="nama" label="Anggota" />
+                        <x-datatable.th :sortable="false" label="Penempatan" />
+                        <x-datatable.th :sortable="false" label="Status Semasa" />
+                        <x-datatable.th :sortable="false" label="Waktu / Catatan" />
+                        @if (auth()->user()?->hasPermission('attendance.manage'))
+                            <x-datatable.th :sortable="false" label="Tindakan Pantas" align="center" />
+                            <x-datatable.th :sortable="false" label="Butiran" align="right" />
+                        @endif
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         @forelse ($anggotaList as $a)
                             @php
                                 $rec = $records->get($a->id);
@@ -257,15 +271,10 @@
                                 @endif
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                    Tiada anggota berkhidmat dijumpai untuk kriteria ini.
-                                </td>
-                            </tr>
+                            <x-datatable.empty message="Tiada anggota berkhidmat dijumpai untuk kriteria ini." :resetUrl="route('attendance.index', ['tarikh' => $date])" :colspan="auth()->user()?->hasPermission('attendance.manage') ? 7 : 5" />
                         @endforelse
                     </tbody>
-                </table>
-            </div>
+                </x-datatable.container>
 
             <!-- Mobile / tablet roster cards -->
             <div class="space-y-3 xl:hidden">
@@ -397,11 +406,8 @@
                 </div>
             </div>
 
-            @if ($anggotaList->hasPages())
-                <div class="mt-4">
-                    {{ $anggotaList->links() }}
-                </div>
-            @endif
+            <!-- DataTables Footer Counter & Pagination -->
+            <x-datatable.footer :paginator="$anggotaList" />
         </x-ui.card>
     </div>
 

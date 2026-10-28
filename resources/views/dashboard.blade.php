@@ -175,34 +175,32 @@
                     </a>
                 </x-slot:actions>
 
-                <div class="hidden overflow-x-auto xl:block">
-                    <table class="w-full text-left text-xs">
-                        <thead class="text-[11px] uppercase bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                            <tr>
-                                <th class="px-4 py-2.5">Masa</th>
-                                <th class="px-4 py-2.5">Pengguna</th>
-                                <th class="px-4 py-2.5">Tindakan</th>
-                                <th class="px-4 py-2.5">Jadual</th>
-                                <th class="px-4 py-2.5">ID Rekod</th>
+                <x-datatable.container>
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <x-datatable.th :sortable="false" label="Masa" />
+                            <x-datatable.th :sortable="false" label="Pengguna" />
+                            <x-datatable.th :sortable="false" label="Tindakan" />
+                            <x-datatable.th :sortable="false" label="Jadual" />
+                            <x-datatable.th :sortable="false" label="ID Rekod" />
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs">
+                        @foreach ($recentAudits as $log)
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                <td class="px-5 py-3 text-slate-500">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
+                                <td class="px-5 py-3 text-slate-800 dark:text-slate-200 font-sans font-medium">{{ $log->user?->nama ?? 'Sistem' }}</td>
+                                <td class="px-5 py-3">
+                                    <x-ui.badge :variant="$log->tindakan === 'DELETE' ? 'danger' : ($log->tindakan === 'CREATE' ? 'success' : 'info')">
+                                        {{ $log->tindakan }}
+                                    </x-ui.badge>
+                                </td>
+                                <td class="px-5 py-3 text-slate-700 dark:text-slate-300">{{ $log->nama_jadual }}</td>
+                                <td class="px-5 py-3 text-slate-500">#{{ $log->record_id ?? '-' }}</td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-[11px]">
-                            @foreach ($recentAudits as $log)
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                                    <td class="px-4 py-2.5 text-slate-500">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
-                                    <td class="px-4 py-2.5 text-slate-800 dark:text-slate-200 font-sans">{{ $log->user?->nama ?? 'Sistem' }}</td>
-                                    <td class="px-4 py-2.5">
-                                        <x-ui.badge :variant="$log->tindakan === 'DELETE' ? 'danger' : ($log->tindakan === 'CREATE' ? 'success' : 'info')">
-                                            {{ $log->tindakan }}
-                                        </x-ui.badge>
-                                    </td>
-                                    <td class="px-4 py-2.5 text-slate-700 dark:text-slate-300">{{ $log->nama_jadual }}</td>
-                                    <td class="px-4 py-2.5 text-slate-500">#{{ $log->record_id ?? '-' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+                    </tbody>
+                </x-datatable.container>
 
                 <div class="space-y-2 xl:hidden">
                     @foreach ($recentAudits as $log)

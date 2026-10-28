@@ -5,13 +5,14 @@
     ]" />
 
     <x-ui.card title="Log Audit & Jejak Keselamatan" description="Rekod transaksi pangkalan data dan aktiviti pengguna mengikut ketetapan Invariant 6">
-        <!-- Filters Form -->
-        <form method="GET" action="{{ route('audit.index') }}" class="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Jadual
-                </label>
-                <select name="nama_jadual" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3 py-2 text-slate-900 dark:text-slate-100">
+        <!-- DataTables Toolbar with Search & Contextual Audit Filters -->
+        <x-datatable.toolbar
+            :action="route('audit.index')"
+            searchPlaceholder="Cari jadual, tindakan, ID rekod..."
+            :resetUrl="route('audit.index')"
+        >
+            <div class="w-36">
+                <select name="nama_jadual" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs">
                     <option value="">Semua Jadual</option>
                     @foreach ($tableOptions as $t)
                         <option value="{{ $t }}" {{ request('nama_jadual') === $t ? 'selected' : '' }}>{{ $t }}</option>
@@ -19,11 +20,8 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Tindakan
-                </label>
-                <select name="tindakan" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3 py-2 text-slate-900 dark:text-slate-100">
+            <div class="w-32">
+                <select name="tindakan" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs">
                     <option value="">Semua Tindakan</option>
                     @foreach ($actionOptions as $a)
                         <option value="{{ $a }}" {{ request('tindakan') === $a ? 'selected' : '' }}>{{ $a }}</option>
@@ -31,11 +29,8 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Pengguna
-                </label>
-                <select name="user_id" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3 py-2 text-slate-900 dark:text-slate-100">
+            <div class="w-36">
+                <select name="user_id" onchange="this.form.submit()" class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs">
                     <option value="">Semua Pengguna</option>
                     @foreach ($userOptions as $u)
                         <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->nama }}</option>
@@ -43,33 +38,30 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Tarikh
-                </label>
+            <div class="w-36">
                 <input
                     type="date"
                     name="tarikh"
                     value="{{ request('tarikh') }}"
                     onchange="this.form.submit()"
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3 py-2 text-slate-900 dark:text-slate-100"
+                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs"
                 />
             </div>
-        </form>
+        </x-datatable.toolbar>
 
-        <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 dark:bg-slate-800/60 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
-                    <tr>
-                        <th class="px-4 py-3">Masa Transaksi</th>
-                        <th class="px-4 py-3">Pengguna</th>
-                        <th class="px-4 py-3">Tindakan</th>
-                        <th class="px-4 py-3">Nama Jadual</th>
-                        <th class="px-4 py-3">ID Rekod</th>
-                        <th class="px-4 py-3 text-right">Butiran Snapshot</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Desktop DataTable -->
+        <x-datatable.container>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                    <x-datatable.th column="masa" label="Masa Transaksi" />
+                    <x-datatable.th :sortable="false" label="Pengguna" />
+                    <x-datatable.th column="tindakan" label="Tindakan" />
+                    <x-datatable.th column="jadual" label="Nama Jadual" />
+                    <x-datatable.th column="record_id" label="ID Rekod" />
+                    <x-datatable.th :sortable="false" label="Butiran Snapshot" align="right" />
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @forelse ($logs as $log)
                         <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                             <td class="px-4 py-3 font-mono text-slate-500">
@@ -96,15 +88,10 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-400">
-                                Tiada log audit dijumpai bagi kriteria ini.
-                            </td>
-                        </tr>
+                        <x-datatable.empty message="Tiada log audit dijumpai bagi kriteria ini." :resetUrl="route('audit.index')" colspan="6" />
                     @endforelse
                 </tbody>
-            </table>
-        </div>
+            </x-datatable.container>
 
         <!-- Mobile / tablet collapsible audit rows -->
         <div class="space-y-2 xl:hidden">
@@ -154,10 +141,7 @@
             @endforelse
         </div>
 
-        @if ($logs->hasPages())
-            <div class="mt-4">
-                {{ $logs->links() }}
-            </div>
-        @endif
+        <!-- DataTables Footer Counter & Pagination -->
+        <x-datatable.footer :paginator="$logs" />
     </x-ui.card>
 </x-layouts.app>

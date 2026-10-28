@@ -12,38 +12,26 @@
             </x-ui.button>
         </x-slot:actions>
 
-        <!-- Search Bar -->
-        <form method="GET" action="{{ route('users.index') }}" class="mb-4 flex items-center gap-3">
-            <div class="relative flex-1 max-w-sm">
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari mengikut nama atau emel..."
-                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3.5 py-2 pl-9 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-emerald-500"
-                />
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <x-icon name="search" class="w-4 h-4" />
-                </div>
-            </div>
-            <x-ui.button type="submit" variant="secondary" size="sm">
-                Cari
-            </x-ui.button>
-        </form>
+        <!-- DataTables Toolbar with Search & Entries Selector -->
+        <x-datatable.toolbar
+            :action="route('users.index')"
+            searchPlaceholder="Cari mengikut nama atau emel..."
+            :resetUrl="route('users.index')"
+        />
 
-        <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                        <th class="px-5 py-3">Nama Pengguna</th>
-                        <th class="px-5 py-3">Emel</th>
-                        <th class="px-5 py-3">Peranan</th>
-                        <th class="px-5 py-3">Skop Akses Pentadbiran</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3 text-right">Tindakan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Desktop DataTable -->
+        <x-datatable.container>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                    <x-datatable.th column="nama" label="Nama Pengguna" />
+                    <x-datatable.th column="email" label="Emel" />
+                    <x-datatable.th :sortable="false" label="Peranan" />
+                    <x-datatable.th :sortable="false" label="Skop Akses Pentadbiran" />
+                    <x-datatable.th column="aktif" label="Status" />
+                    <x-datatable.th :sortable="false" label="Tindakan" align="right" />
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @forelse ($users as $u)
                         <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="px-5 py-3.5 font-medium text-slate-900 dark:text-white">
@@ -101,15 +89,10 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                Tiada pengguna dijumpai.
-                            </td>
-                        </tr>
+                        <x-datatable.empty message="Tiada pengguna dijumpai." :resetUrl="route('users.index')" colspan="6" />
                     @endforelse
                 </tbody>
-            </table>
-        </div>
+            </x-datatable.container>
 
         <!-- Mobile / tablet user cards -->
         <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">
@@ -178,10 +161,7 @@
             @endforelse
         </div>
 
-        @if ($users->hasPages())
-            <div class="mt-4">
-                {{ $users->links() }}
-            </div>
-        @endif
+        <!-- DataTables Footer Counter & Pagination -->
+        <x-datatable.footer :paginator="$users" />
     </x-ui.card>
 </x-layouts.app>

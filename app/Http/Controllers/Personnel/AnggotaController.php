@@ -10,6 +10,7 @@ use App\Services\AuditLoggerService;
 use App\Services\OneStack\OneStackSyncService;
 use App\Services\PenempatanService;
 use App\Services\ScopeService;
+use App\Traits\HasDataTableQueries;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,8 @@ use Illuminate\View\View;
 
 class AnggotaController extends Controller
 {
+    use HasDataTableQueries;
+
     public function __construct(
         protected ScopeService $scopeService,
         protected PenempatanService $penempatanService
@@ -75,7 +78,30 @@ class AnggotaController extends Controller
             $query->where('aktif', $request->boolean('status'));
         }
 
-        $anggotaList = $query->orderByDesc('aktif')->orderBy('susunan')->orderBy('nama_penuh')->paginate(15)->withQueryString();
+        $sortableColumns = [
+            'no_pekerja' => 'no_pekerja',
+            'nama' => 'nama_penuh',
+            'jawatan' => 'jawatan',
+            'susunan' => 'susunan',
+            'aktif' => 'aktif',
+        ];
+
+        if (! $request->has('sort')) {
+            $query->orderByDesc('aktif')->orderBy('susunan')->orderBy('nama_penuh');
+            $perPage = (int) $request->input('per_page', 15);
+            $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 15;
+            $anggotaList = $query->paginate($perPage)->withQueryString();
+        } else {
+            $anggotaList = $this->applyDataTable(
+                $query,
+                $request,
+                $sortableColumns,
+                defaultSort: 'nama',
+                defaultDirection: 'asc',
+                defaultPerPage: 15
+            );
+        }
+
         $bahagianList = Bahagian::where('aktif', true)->orderBy('nama')->get();
         $unitList = Unit::where('aktif', true)->orderBy('nama')->get();
         $totalOneStackSynced = Anggota::whereNotNull('onestack_id')->count();

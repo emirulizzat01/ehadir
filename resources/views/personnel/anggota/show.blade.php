@@ -110,21 +110,20 @@
                 </x-slot:actions>
             @endif
 
-            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                            <th class="px-5 py-3">Entiti Penempatan</th>
-                            <th class="px-5 py-3">Jenis</th>
-                            <th class="px-5 py-3">Tarikh Mula</th>
-                            <th class="px-5 py-3">Tarikh Tamat</th>
-                            <th class="px-5 py-3">Status Tempoh</th>
-                            @if (auth()->user()?->hasPermission('anggota.manage'))
-                                <th class="px-5 py-3 text-right">Tindakan</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <x-datatable.container>
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <x-datatable.th :sortable="false" label="Entiti Penempatan" />
+                        <x-datatable.th :sortable="false" label="Jenis" />
+                        <x-datatable.th :sortable="false" label="Tarikh Mula" />
+                        <x-datatable.th :sortable="false" label="Tarikh Tamat" />
+                        <x-datatable.th :sortable="false" label="Status Tempoh" />
+                        @if (auth()->user()?->hasPermission('anggota.manage'))
+                            <x-datatable.th :sortable="false" label="Tindakan" align="right" />
+                        @endif
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         @forelse ($anggota->penempatan as $p)
                             @php
                                 $isActive = $p->tarikh_mula->isPast() && ($p->tarikh_tamat === null || $p->tarikh_tamat->isFuture() || $p->tarikh_tamat->isToday());
@@ -165,8 +164,7 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
-            </div>
+                </x-datatable.container>
 
             <div class="space-y-2 xl:hidden">
                 @forelse ($anggota->penempatan as $p)
@@ -223,54 +221,52 @@
                 </x-ui.button>
             </x-slot:actions>
 
-            <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                            <th class="px-4 py-2.5">Tarikh</th>
-                            <th class="px-4 py-2.5">Status</th>
-                            <th class="px-4 py-2.5">Masa / Jenis</th>
-                            <th class="px-4 py-2.5">Lokasi / Catatan</th>
-                            <th class="px-4 py-2.5">Penempatan Terikat</th>
-                            <th class="px-4 py-2.5 text-right">Butiran</th>
+            <x-datatable.container>
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <x-datatable.th :sortable="false" label="Tarikh" />
+                        <x-datatable.th :sortable="false" label="Status" />
+                        <x-datatable.th :sortable="false" label="Masa / Jenis" />
+                        <x-datatable.th :sortable="false" label="Lokasi / Catatan" />
+                        <x-datatable.th :sortable="false" label="Penempatan Terikat" />
+                        <x-datatable.th :sortable="false" label="Butiran" align="right" />
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    @forelse ($anggota->kehadiran as $k)
+                        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                            <td class="px-5 py-3.5 font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                {{ $k->tarikh->format('d/m/Y') }}
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <x-ui.badge :color="$k->status->warna">
+                                    {{ $k->status->nama }}
+                                </x-ui.badge>
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-400">
+                                {{ $k->sepanjang_hari ? 'Sepanjang Hari' : ($k->masa_mula . ' - ' . $k->masa_tamat) }}
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-400">
+                                {{ $k->lokasi ?? $k->catatan ?? '-' }}
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-slate-500">
+                                {{ $k->penempatan->lokasi_penempatan ?? '-' }}
+                            </td>
+                            <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                                <a href="{{ route('attendance.show', $k) }}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    Papar &rarr;
+                                </a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        @forelse ($anggota->kehadiran as $k)
-                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                                <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
-                                    {{ $k->tarikh->format('d/m/Y') }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <x-ui.badge :color="$k->status->warna">
-                                        {{ $k->status->nama }}
-                                    </x-ui.badge>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
-                                    {{ $k->sepanjang_hari ? 'Sepanjang Hari' : ($k->masa_mula . ' - ' . $k->masa_tamat) }}
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
-                                    {{ $k->lokasi ?? $k->catatan ?? '-' }}
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-500">
-                                    {{ $k->penempatan->lokasi_penempatan ?? '-' }}
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="{{ route('attendance.show', $k) }}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
-                                        Papar &rarr;
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-xs">
-                                    Tiada rekod kehadiran direkodkan lagi.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
+                                Tiada rekod kehadiran direkodkan lagi.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </x-datatable.container>
 
             <div class="space-y-2 xl:hidden">
                 @forelse ($anggota->kehadiran as $k)

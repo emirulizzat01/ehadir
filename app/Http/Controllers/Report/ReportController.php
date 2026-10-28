@@ -9,6 +9,7 @@ use App\Models\RekodKehadiran;
 use App\Models\StatusKehadiran;
 use App\Models\Unit;
 use App\Services\ScopeService;
+use App\Traits\HasDataTableQueries;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
+    use HasDataTableQueries;
+
     public function __construct(
         protected ScopeService $scopeService
     ) {}
@@ -29,6 +32,14 @@ class ReportController extends Controller
 
         $anggotaQuery = Anggota::where('aktif', true);
         $this->scopeService->scopeAnggota($anggotaQuery, $user, $date);
+
+        if ($search = $request->input('search')) {
+            $anggotaQuery->where(function ($q) use ($search) {
+                $q->where('nama_penuh', 'like', "%{$search}%")
+                    ->orWhere('no_pekerja', 'like', "%{$search}%")
+                    ->orWhere('jawatan', 'like', "%{$search}%");
+            });
+        }
 
         if ($bahagianId = $request->input('bahagian_id')) {
             $anggotaQuery->whereHas('penempatan', function ($q) use ($bahagianId, $date) {
@@ -46,7 +57,28 @@ class ReportController extends Controller
             });
         }
 
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->paginate(25)->withQueryString();
+        $sortableColumns = [
+            'nama' => 'nama_penuh',
+            'no_pekerja' => 'no_pekerja',
+            'jawatan' => 'jawatan',
+            'susunan' => 'susunan',
+        ];
+
+        if (! $request->has('sort')) {
+            $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh');
+            $perPage = (int) $request->input('per_page', 25);
+            $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
+            $anggotaList = $anggotaQuery->paginate($perPage)->withQueryString();
+        } else {
+            $anggotaList = $this->applyDataTable(
+                $anggotaQuery,
+                $request,
+                $sortableColumns,
+                defaultSort: 'nama',
+                defaultDirection: 'asc',
+                defaultPerPage: 25
+            );
+        }
         $anggotaIds = $anggotaList->getCollection()->pluck('id')->all();
 
         $records = RekodKehadiran::with(['status', 'penempatan.bahagian', 'penempatan.unit'])

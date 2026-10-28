@@ -10,6 +10,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\UserScope;
 use App\Services\AuditLoggerService;
+use App\Traits\HasDataTableQueries;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,8 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    use HasDataTableQueries;
+
     public function index(Request $request): View
     {
         $this->authorizeSuperAdmin();
@@ -32,7 +35,21 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $sortableColumns = [
+            'nama' => 'nama',
+            'email' => 'email',
+            'last_login' => 'last_login',
+            'aktif' => 'aktif',
+        ];
+
+        $users = $this->applyDataTable(
+            $query,
+            $request,
+            $sortableColumns,
+            defaultSort: 'nama',
+            defaultDirection: 'asc',
+            defaultPerPage: 15
+        );
 
         return view('admin.users.index', compact('users'));
     }

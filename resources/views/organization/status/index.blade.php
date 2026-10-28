@@ -22,20 +22,20 @@
             </x-ui.button>
         </x-slot:actions>
 
-        <div class="hidden overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 xl:block">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                        <th class="px-5 py-3">Susunan</th>
-                        <th class="px-5 py-3">Kod</th>
-                        <th class="px-5 py-3">Nama Status</th>
-                        <th class="px-5 py-3">Warna Lencana</th>
-                        <th class="px-5 py-3">Jumlah Penggunaan Rekod</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3 text-right">Tindakan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <!-- Desktop DataTable -->
+        <x-datatable.container>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                    <x-datatable.th :sortable="false" label="Susunan" />
+                    <x-datatable.th :sortable="false" label="Kod" />
+                    <x-datatable.th :sortable="false" label="Nama Status" />
+                    <x-datatable.th :sortable="false" label="Warna Lencana" />
+                    <x-datatable.th :sortable="false" label="Jumlah Penggunaan Rekod" />
+                    <x-datatable.th :sortable="false" label="Status" />
+                    <x-datatable.th :sortable="false" label="Tindakan" align="right" />
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @foreach ($statuses as $st)
                         <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="px-5 py-3.5 font-bold text-xs text-slate-500">
@@ -77,8 +77,7 @@
                         </tr>
                     @endforeach
                 </tbody>
-            </table>
-        </div>
+            </x-datatable.container>
 
         <!-- Mobile / tablet status cards -->
         <div class="grid grid-cols-1 gap-3 xl:hidden lg:grid-cols-2">

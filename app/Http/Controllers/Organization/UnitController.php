@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Organization;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Services\AuditLoggerService;
+use App\Traits\HasDataTableQueries;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Illuminate\View\View;
 
 class UnitController extends Controller
 {
+    use HasDataTableQueries;
+
     public function index(Request $request): View
     {
         $this->authorizePermission('org.view');
@@ -28,7 +31,21 @@ class UnitController extends Controller
             });
         }
 
-        $unitList = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $sortableColumns = [
+            'kod' => 'kod',
+            'nama' => 'nama',
+            'bil_anggota' => 'aktif_anggota_count',
+            'aktif' => 'aktif',
+        ];
+
+        $unitList = $this->applyDataTable(
+            $query,
+            $request,
+            $sortableColumns,
+            defaultSort: 'nama',
+            defaultDirection: 'asc',
+            defaultPerPage: 15
+        );
 
         return view('organization.unit.index', compact('unitList'));
     }
