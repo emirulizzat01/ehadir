@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Anggota;
 use App\Models\Bahagian;
 use App\Models\RekodKehadiran;
-use App\Models\StatusKehadiran;
 use App\Models\Unit;
 use App\Models\User;
 use Carbon\Carbon;
@@ -48,7 +47,7 @@ class WhatsAppSummaryService
         if ($bahagianId) {
             $bahagian = Bahagian::find($bahagianId);
             if ($bahagian) {
-                $scopeLabel = 'Bahagian ' . $bahagian->nama;
+                $scopeLabel = 'Bahagian '.$bahagian->nama;
                 $anggotaQuery->whereHas('penempatan', function ($q) use ($bahagianId, $date) {
                     $q->where('bahagian_id', $bahagianId)
                         ->where('tarikh_mula', '<=', $date)
@@ -60,7 +59,7 @@ class WhatsAppSummaryService
         } elseif ($unitId) {
             $unit = Unit::find($unitId);
             if ($unit) {
-                $scopeLabel = 'Unit ' . $unit->nama;
+                $scopeLabel = 'Unit '.$unit->nama;
                 $anggotaQuery->whereHas('penempatan', function ($q) use ($unitId, $date) {
                     $q->where('unit_id', $unitId)
                         ->where('tarikh_mula', '<=', $date)
@@ -74,12 +73,12 @@ class WhatsAppSummaryService
             if (! empty($scopedBahagianIds)) {
                 $scopedBahagian = Bahagian::find($scopedBahagianIds[0]);
                 if ($scopedBahagian) {
-                    $scopeLabel = 'Bahagian ' . $scopedBahagian->nama;
+                    $scopeLabel = 'Bahagian '.$scopedBahagian->nama;
                 }
             }
         }
 
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->get();
+        $anggotaList = $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->get();
         $anggotaIds = $anggotaList->pluck('id')->all();
 
         // 2. Fetch Attendance Records for this Date
@@ -123,6 +122,7 @@ class WhatsAppSummaryService
                     'anggota' => $anggota,
                     'details' => 'Belum Direkod',
                 ];
+
                 continue;
             }
 
@@ -149,7 +149,7 @@ class WhatsAppSummaryService
                 case 'MC':
                     $leaveName = $record->status?->nama ?? 'Cuti';
                     if ($record->catatan) {
-                        $leaveName .= ' (' . $record->catatan . ')';
+                        $leaveName .= ' ('.$record->catatan.')';
                     }
                     $leaveList[] = [
                         'anggota' => $anggota,
@@ -163,7 +163,7 @@ class WhatsAppSummaryService
                         $timeDetail .= " ({$record->masa_mula} - {$record->masa_tamat})";
                     }
                     if ($record->catatan) {
-                        $timeDetail .= ' - ' . $record->catatan;
+                        $timeDetail .= ' - '.$record->catatan;
                     }
                     $fourHourList[] = [
                         'anggota' => $anggota,
@@ -194,9 +194,9 @@ class WhatsAppSummaryService
         // Build WhatsApp Message Lines
         $lines = [];
         $lines[] = '📊 *STATUS KEHADIRAN HARIAN KEJORA*';
-        $lines[] = '🏢 *' . $scopeLabel . '*';
-        $lines[] = '📅 *' . $carbonDate->translatedFormat('l, d F Y') . '*';
-        $lines[] = '⏰ Masa Laporan: *' . now()->format('h:i A') . '*';
+        $lines[] = '🏢 *'.$scopeLabel.'*';
+        $lines[] = '📅 *'.$carbonDate->translatedFormat('l, d F Y').'*';
+        $lines[] = '⏰ Masa Laporan: *'.now()->format('h:i A').'*';
         $lines[] = '━━━━━━━━━━━━━━━━━━━━━';
         $lines[] = '📈 *RINGKASAN KEHADIRAN*';
         $lines[] = "• Jumlah Anggota: *{$totalAnggota} orang*";

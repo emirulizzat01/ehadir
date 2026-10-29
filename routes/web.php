@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::post('anggota/sync-onestack', [AnggotaController::class, 'syncOneStack'])
             ->name('anggota.sync-onestack')
             ->middleware('throttle:10,1');
+        Route::post('anggota/sync-hierarchy', [AnggotaController::class, 'syncHierarchy'])->name('anggota.sync-hierarchy');
         Route::post('anggota/{anggota}/refresh-onestack', [AnggotaController::class, 'refreshOneStack'])->name('anggota.refresh-onestack');
         Route::resource('anggota', AnggotaController::class)->parameters(['anggota' => 'anggota']);
 

@@ -109,6 +109,7 @@
                         <x-datatable.th column="no_pekerja" label="No. Pekerja" />
                         <x-datatable.th column="nama" label="Nama Anggota" />
                         <x-datatable.th column="jawatan" label="Jawatan" />
+                        <x-datatable.th column="hierarki" label="Gred" />
                         <x-datatable.th :sortable="false" label="Penempatan" />
                         <x-datatable.th :sortable="false" label="Status Kehadiran" />
                         <x-datatable.th :sortable="false" label="Waktu / Butiran" />
@@ -126,6 +127,15 @@
                                     {{ $a->nama_penuh_gelaran }}
                                 </td>
                                 <td class="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs">{{ $a->jawatan ?? '-' }}</td>
+                                <td class="px-4 py-3 text-xs">
+                                    @if ($a->gred)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                            {{ $a->gred }}
+                                        </span>
+                                    @else
+                                        <span class="text-slate-400">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
                                     {{ $rec?->penempatan?->lokasi_penempatan ?? 'Tiada Penempatan' }}
                                 </td>
@@ -148,7 +158,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-datatable.empty message="Tiada rekod anggota dijumpai dalam laporan bagi tarikh ini." :resetUrl="route('reports.daily', ['tarikh' => $date])" colspan="7" />
+                            <x-datatable.empty message="Tiada rekod anggota dijumpai dalam laporan bagi tarikh ini." :resetUrl="route('reports.daily', ['tarikh' => $date])" colspan="8" />
                         @endforelse
                     </tbody>
                 </x-datatable.container>

@@ -61,11 +61,13 @@ class ReportController extends Controller
             'nama' => 'nama_penuh',
             'no_pekerja' => 'no_pekerja',
             'jawatan' => 'jawatan',
+            'gred' => 'tahap_hierarki',
+            'hierarki' => 'tahap_hierarki',
             'susunan' => 'susunan',
         ];
 
         if (! $request->has('sort')) {
-            $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh');
+            $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh');
             $perPage = (int) $request->input('per_page', 25);
             $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
             $anggotaList = $anggotaQuery->paginate($perPage)->withQueryString();
@@ -113,9 +115,9 @@ class ReportController extends Controller
 
         $anggotaQuery = Anggota::where('aktif', true);
         $this->scopeService->scopeAnggota($anggotaQuery, $user, $startOfMonth->toDateString());
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->get();
+        $anggotaList = $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->get();
         $anggotaIds = $anggotaList->pluck('id')->all();
-        $mobileAnggota = (clone $anggotaQuery)->reorder()->orderBy('susunan')->orderBy('nama_penuh')->paginate(25, ['*'], 'mobile_page')->withQueryString();
+        $mobileAnggota = (clone $anggotaQuery)->reorder()->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->paginate(25, ['*'], 'mobile_page')->withQueryString();
 
         $records = RekodKehadiran::with('status')
             ->whereYear('tarikh', $year)
@@ -146,7 +148,7 @@ class ReportController extends Controller
 
         $anggotaQuery = Anggota::where('aktif', true);
         $this->scopeService->scopeAnggota($anggotaQuery, $user, $date);
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->get();
+        $anggotaList = $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->get();
         $anggotaIds = $anggotaList->pluck('id')->all();
 
         $records = RekodKehadiran::with(['status', 'penempatan.bahagian', 'penempatan.unit'])
@@ -207,7 +209,7 @@ class ReportController extends Controller
             });
         }
 
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->get();
+        $anggotaList = $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->get();
         $anggotaIds = $anggotaList->pluck('id')->all();
 
         $records = RekodKehadiran::with(['status', 'penempatan.bahagian', 'penempatan.unit'])
@@ -231,7 +233,7 @@ class ReportController extends Controller
 
         $anggotaQuery = Anggota::where('aktif', true);
         $this->scopeService->scopeAnggota($anggotaQuery, $user, $startOfMonth->toDateString());
-        $anggotaList = $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh')->get();
+        $anggotaList = $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh')->get();
         $anggotaIds = $anggotaList->pluck('id')->all();
 
         $records = RekodKehadiran::with('status')

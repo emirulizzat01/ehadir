@@ -9,6 +9,7 @@ use App\Models\Unit;
 use App\Services\AuditLoggerService;
 use App\Services\OneStack\OneStackSyncService;
 use App\Services\PenempatanService;
+use App\Services\Personnel\GradeHierarchyService;
 use App\Services\ScopeService;
 use App\Traits\HasDataTableQueries;
 use Illuminate\Http\RedirectResponse;
@@ -82,12 +83,14 @@ class AnggotaController extends Controller
             'no_pekerja' => 'no_pekerja',
             'nama' => 'nama_penuh',
             'jawatan' => 'jawatan',
+            'gred' => 'tahap_hierarki',
+            'hierarki' => 'tahap_hierarki',
             'susunan' => 'susunan',
             'aktif' => 'aktif',
         ];
 
         if (! $request->has('sort')) {
-            $query->orderByDesc('aktif')->orderBy('susunan')->orderBy('nama_penuh');
+            $query->orderByDesc('aktif')->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh');
             $perPage = (int) $request->input('per_page', 15);
             $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 15;
             $anggotaList = $query->paginate($perPage)->withQueryString();
@@ -154,6 +157,26 @@ class AnggotaController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', "Ralat semasa menyegerakkan rekod dari OneStack: {$e->getMessage()}");
         }
+    }
+
+    public function syncHierarchy(GradeHierarchyService $hierarchyService): RedirectResponse
+    {
+        $this->authorizePermission('anggota.manage');
+
+        $updated = 0;
+        Anggota::chunk(100, function ($records) use ($hierarchyService, &$updated) {
+            foreach ($records as $anggota) {
+                $score = $hierarchyService->calculateScore($anggota->gred, $anggota->jawatan);
+                if ($anggota->tahap_hierarki !== $score) {
+                    $anggota->tahap_hierarki = $score;
+                    $anggota->saveQuietly();
+                    $updated++;
+                }
+            }
+        });
+
+        return redirect()->route('personnel.anggota.index')
+            ->with('success', "Penyelarasan hierarki jawatan berjaya disegerakkan ({$updated} rekod dikemaskini).");
     }
 
     public function create(): View

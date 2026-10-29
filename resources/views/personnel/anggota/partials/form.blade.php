@@ -70,7 +70,7 @@
                 type="number"
                 label="Keutamaan Susunan Paparan"
                 :value="old('susunan', $anggota?->susunan ?? 0)"
-                hint="Nilai lebih kecil dipaparkan lebih awal."
+                hint="Penalaan susunan antara pegawai dalam gred yang sama (nilai lebih kecil dipaparkan dahulu)."
             />
 
             <div class="pt-6">

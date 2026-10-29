@@ -218,7 +218,11 @@ class TvDashboardView extends Component
                 ->map(fn ($p) => $p->anggota)
                 ->filter(fn ($a) => $a && $a->aktif)
                 ->unique('id')
-                ->sortBy('susunan')
+                ->sortBy([
+                    fn ($a, $b) => ($b->tahap_hierarki ?? 100) <=> ($a->tahap_hierarki ?? 100),
+                    fn ($a, $b) => ($a->susunan ?? 0) <=> ($b->susunan ?? 0),
+                    fn ($a, $b) => strcmp($a->nama_penuh, $b->nama_penuh),
+                ])
                 ->values();
 
             $deptStaffIds = $deptStaffMembers->pluck('id')->all();

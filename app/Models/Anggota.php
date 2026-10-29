@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Personnel\GradeHierarchyService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ class Anggota extends Model
         'gelaran',
         'jawatan',
         'gred',
+        'tahap_hierarki',
         'emel',
         'no_telefon',
         'aktif',
@@ -34,11 +36,22 @@ class Anggota extends Model
     {
         return [
             'onestack_id' => 'integer',
+            'tahap_hierarki' => 'integer',
             'aktif' => 'boolean',
             'tarikh_bersara' => 'date',
             'susunan' => 'integer',
             'last_synced_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Anggota $anggota) {
+            if ($anggota->isDirty(['gred', 'jawatan']) || ! isset($anggota->tahap_hierarki)) {
+                $service = app(GradeHierarchyService::class);
+                $anggota->tahap_hierarki = $service->calculateScore($anggota->gred, $anggota->jawatan);
+            }
+        });
     }
 
     public function user(): HasOne
@@ -104,5 +117,23 @@ class Anggota extends Model
     public function getNamaPenuhGelaranAttribute(): string
     {
         return $this->gelaran ? "{$this->gelaran} {$this->nama_penuh}" : $this->nama_penuh;
+    }
+
+    /**
+     * Accessor for hierarchy category title.
+     */
+    public function getKategoriHierarkiAttribute(): string
+    {
+        return app(GradeHierarchyService::class)->getCategoryLabel($this->tahap_hierarki ?? 100);
+    }
+
+    /**
+     * Scope to order anggota by public service hierarchy (highest to lowest grade).
+     */
+    public function scopeOrderByHierarchy($query, string $direction = 'desc')
+    {
+        return $query->orderBy('tahap_hierarki', $direction)
+            ->orderBy('susunan', 'asc')
+            ->orderBy('nama_penuh', 'asc');
     }
 }

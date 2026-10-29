@@ -89,11 +89,13 @@ class AttendanceController extends Controller
             'nama' => 'nama_penuh',
             'no_pekerja' => 'no_pekerja',
             'jawatan' => 'jawatan',
+            'gred' => 'tahap_hierarki',
+            'hierarki' => 'tahap_hierarki',
             'susunan' => 'susunan',
         ];
 
         if (! $request->has('sort')) {
-            $anggotaQuery->orderBy('susunan')->orderBy('nama_penuh');
+            $anggotaQuery->orderByDesc('tahap_hierarki')->orderBy('susunan')->orderBy('nama_penuh');
             $perPage = (int) $request->input('per_page', 25);
             $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
             $anggotaList = $anggotaQuery->paginate($perPage)->withQueryString();

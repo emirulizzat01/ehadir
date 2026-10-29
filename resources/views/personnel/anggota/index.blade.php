@@ -1,8 +1,8 @@
 <x-layouts.app title="Direktori Anggota">
     <div
         class="space-y-6"
-        x-data="{ action: '', nama_penuh: '', no_pekerja: '', gelaran: '', jawatan: '', susunan: 0, aktif: true }"
-        x-on:open-edit-anggota.window="action = $event.detail.action; nama_penuh = $event.detail.nama_penuh; no_pekerja = $event.detail.no_pekerja; gelaran = $event.detail.gelaran; jawatan = $event.detail.jawatan; susunan = $event.detail.susunan; aktif = $event.detail.aktif; $dispatch('open-slide-over', { name: 'slideover-edit-anggota' });"
+        x-data="{ action: '', nama_penuh: '', no_pekerja: '', gelaran: '', jawatan: '', gred: '', susunan: 0, aktif: true }"
+        x-on:open-edit-anggota.window="action = $event.detail.action; nama_penuh = $event.detail.nama_penuh; no_pekerja = $event.detail.no_pekerja; gelaran = $event.detail.gelaran; jawatan = $event.detail.jawatan; gred = $event.detail.gred; susunan = $event.detail.susunan; aktif = $event.detail.aktif; $dispatch('open-slide-over', { name: 'slideover-edit-anggota' });"
     >
         <x-ui.breadcrumbs :items="[
             ['label' => 'Anggota'],
@@ -17,6 +17,13 @@
                     <x-ui.button type="submit" variant="primary" size="sm">
                         <x-icon name="history" class="w-4 h-4" />
                         <span>Segerakkan OneStack</span>
+                    </x-ui.button>
+                </form>
+                <form method="POST" action="{{ route('personnel.anggota.sync-hierarchy') }}" class="inline">
+                    @csrf
+                    <x-ui.button type="submit" variant="secondary" size="sm" title="Susun semula kedudukan mengikut hierarki gred perkhidmatan awam">
+                        <x-icon name="arrow-path" class="w-4 h-4" />
+                        <span>Selaraskan Hierarki</span>
                     </x-ui.button>
                 </form>
                 <x-ui.button type="button" @click="$dispatch('open-slide-over', { name: 'slideover-create-anggota' })" variant="secondary" size="sm">
@@ -79,6 +86,19 @@
                     @endforeach
                 </select>
             </div>
+
+            <div class="w-44">
+                <select
+                    name="sort"
+                    onchange="if (this.value === 'nama') { this.form.direction.value = 'asc'; } else if (this.value === 'hierarki') { this.form.direction.value = 'desc'; } this.form.submit()"
+                    class="block w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer shadow-xs"
+                >
+                    <option value="hierarki" {{ (request('sort') === 'hierarki' || !request()->has('sort')) ? 'selected' : '' }}>🎖️ Susunan Hierarki</option>
+                    <option value="nama" {{ request('sort') === 'nama' ? 'selected' : '' }}>🔤 Abjad (A - Z)</option>
+                    <option value="no_pekerja" {{ request('sort') === 'no_pekerja' ? 'selected' : '' }}>🔢 No. Pekerja</option>
+                    <option value="jawatan" {{ request('sort') === 'jawatan' ? 'selected' : '' }}>💼 Jawatan</option>
+                </select>
+            </div>
         </x-datatable.toolbar>
 
         <!-- Desktop DataTable -->
@@ -88,6 +108,7 @@
                     <x-datatable.th column="no_pekerja" label="No. Pekerja" />
                     <x-datatable.th column="nama" label="Nama Anggota" />
                     <x-datatable.th column="jawatan" label="Jawatan" />
+                    <x-datatable.th column="hierarki" label="Hierarki / Gred" />
                     <x-datatable.th :sortable="false" label="Bahagian / Unit" />
                     <x-datatable.th column="aktif" label="Status" />
                     <x-datatable.th :sortable="false" label="Tindakan" align="right" />
@@ -107,17 +128,24 @@
                                 <a href="{{ route('personnel.anggota.show', $a) }}" class="font-medium text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 block">
                                     {{ $a->nama_penuh_gelaran }}
                                 </a>
-                                @if ($a->gred)
-                                    <span class="inline-block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                                        Gred {{ $a->gred }}
-                                    </span>
-                                @endif
                             </td>
                             <td class="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-400">
                                 <div class="font-medium text-slate-800 dark:text-slate-200">{{ $a->jawatan ?? '-' }}</div>
                                 @if ($a->emel)
                                     <div class="text-[11px] text-slate-400 font-mono mt-0.5">{{ $a->emel }}</div>
                                 @endif
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    @if ($a->gred)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                                            {{ $a->gred }}
+                                        </span>
+                                    @endif
+                                    <span class="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                                        {{ $a->kategori_hierarki }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-5 py-3.5 text-xs text-slate-700 dark:text-slate-300">
                                 {{ $activePlacement?->lokasi_penempatan ?? $latestPlacement?->lokasi_penempatan ?? '-' }}
@@ -139,6 +167,7 @@
                                             'no_pekerja' => $a->no_pekerja ?? '',
                                             'gelaran' => $a->gelaran ?? '',
                                             'jawatan' => $a->jawatan ?? '',
+                                            'gred' => $a->gred ?? '',
                                             'susunan' => (int) $a->susunan,
                                             'aktif' => (bool) $a->aktif,
                                         ];
@@ -156,7 +185,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-datatable.empty message="Tiada rekod anggota dijumpai dalam skop anda." :resetUrl="route('personnel.anggota.index')" colspan="6" />
+                        <x-datatable.empty message="Tiada rekod anggota dijumpai dalam skop anda." :resetUrl="route('personnel.anggota.index')" colspan="7" />
                     @endforelse
                 </tbody>
             </x-datatable.container>
@@ -180,6 +209,7 @@
                                 @if ($a->gred)
                                     &bull; Gred {{ $a->gred }}
                                 @endif
+                                &bull; <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ $a->kategori_hierarki }}</span>
                             </p>
                         </div>
                         <x-ui.badge :variant="$a->aktif ? 'success' : 'default'" class="shrink-0 whitespace-nowrap">
@@ -213,6 +243,7 @@
                                     'no_pekerja' => $a->no_pekerja ?? '',
                                     'gelaran' => $a->gelaran ?? '',
                                     'jawatan' => $a->jawatan ?? '',
+                                    'gred' => $a->gred ?? '',
                                     'susunan' => (int) $a->susunan,
                                     'aktif' => (bool) $a->aktif,
                                 ];
@@ -298,11 +329,21 @@
                         />
 
                         <x-form.input
-                            name="susunan"
-                            type="number"
-                            label="Keutamaan Susunan"
-                            x-model="susunan"
+                            name="gred"
+                            label="Gred Jawatan"
+                            x-model="gred"
+                            placeholder="Contoh: N52 / N14 / JUSA C"
                         />
+
+                        <div class="sm:col-span-2">
+                            <x-form.input
+                                name="susunan"
+                                type="number"
+                                label="Keutamaan Susunan Manual (Antara Pegawai Segred)"
+                                x-model="susunan"
+                                help="Penalaan susunan dalam gred yang sama (nilai lebih kecil dipaparkan dahulu)"
+                            />
+                        </div>
                     </div>
 
                     <div class="pt-2">
